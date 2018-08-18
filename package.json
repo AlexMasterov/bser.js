@@ -1,0 +1,41 @@
+{
+  "name": "fast-bser",
+  "version": "0.1.0",
+  "description": "A fast and memory-efficient BSER serialization library",
+  "keywords": ["bser", "serialization"],
+  "license": "MIT",
+  "author": {
+    "name": "Alex Masterov",
+    "email": "alex.masterow@gmail.com"
+  },
+  "homepage": "https://github.com/AlexMasterov/fast-bser.js#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlexMasterov/fast-bser.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlexMasterov/fast-bser.js/issues"
+  },
+  "main": "./src/index.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
+  "scripts": {
+    "test": "nyc mocha test/*.test.js",
+    "test-report": "nyc --reporter=html --reporter=text mocha test/*.test.js",
+    "coverage": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls"
+  },
+  "devDependencies": {
+    "coveralls": "3.0.2",
+    "mocha": "5.2.0",
+    "nyc": "12.0.2"
+  },
+  "directories": {
+    "test": "test/"
+  },
+  "nyc": {
+    "cache": false,
+    "reporter": [],
+    "include": ["src/**/*.js"]
+  }
+}
