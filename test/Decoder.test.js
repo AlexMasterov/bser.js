@@ -5,9 +5,8 @@ const { Decoder } = require('../src');
 const { genBin, types } = require('./stub');
 
 function test(stub, bigEndian=false) {
-  const decoder = new Decoder();
-
   stub.forEach(({ name, value: expected, bin }) => {
+    const decoder = new Decoder();
     if (bigEndian) bin = bin.reverse();
     it(name, () => {
       const buffer = Buffer.from(genBin(bin), 'binary');
