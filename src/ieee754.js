@@ -1,5 +1,5 @@
 'use strict';
-
+/* istanbul ignore file */
 function toDouble(x, y) {
   const frac = x + 0x100000000 * (y & 0xfffff);
   const expt = y >> 20 & 0x7ff;

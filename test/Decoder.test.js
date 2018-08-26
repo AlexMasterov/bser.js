@@ -2,14 +2,13 @@
 
 const assert = require('assert');
 const { Decoder } = require('../src');
-const { genBin, types } = require('./stub');
+const { toBuf, types } = require('./stub/types');
 
-function test(stub, bigEndian=false) {
-  stub.forEach(({ name, value: expected, bin }) => {
+function test(stub) {
+  stub.forEach(({ name, value: expected, LE }) => {
     const decoder = new Decoder();
-    if (bigEndian) bin = bin.reverse();
     it(name, () => {
-      const buffer = Buffer.from(genBin(bin), 'binary');
+      const buffer = toBuf(LE);
       const actual = decoder.decode(buffer);
 
       assert.deepStrictEqual(actual, expected);
@@ -18,14 +17,12 @@ function test(stub, bigEndian=false) {
 }
 
 describe('Decoder', () => {
-  const todo = [
-    'real',
-    'int64 safe int',
-    'bigint64',
+  const skip = [
+    'int64 overflow',
   ];
 
   const tests = Object.entries(types)
-    .filter(([name]) => todo.indexOf(name) === -1);
+    .filter(([name]) => skip.indexOf(name) === -1);
 
   for (const [name, stub] of tests) {
     describe(name, () => test(stub));

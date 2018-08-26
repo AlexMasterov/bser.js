@@ -1,21 +1,20 @@
 'use strict';
 
 const assert = require('assert');
-const { Encoder } = require('../src');
-const { genBin, types } = require('./stub');
+const { Encoder: EncoderLE } = require('../src');
+const { toBuf, types } = require('./stub/types');
 
-function test(stub, bigEndian=false) {
-  const encoder = new Encoder();
+function test(stub) {
+  const encoderLE = new EncoderLE();
 
-  stub.forEach(({ name, value, bin }) => {
-    if (bigEndian) bin = bin.reverse();
-    it(name, () => {
-      const actual = encoder.encode(value);
-      const expected = genBin(bin);
+  for (const { name, value, LE } of stub) {
+    it(`${name} LE`, () => {
+      const actual = encoderLE.encode(value);
+      const expected = toBuf(LE).latin1Slice();
 
       assert.deepStrictEqual(actual, expected);
     });
-  });
+  }
 }
 
 describe('Encoder', () => {

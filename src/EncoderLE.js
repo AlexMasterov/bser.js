@@ -7,10 +7,22 @@ const ObjectKeys = Object.keys;
 const FastBuffer = Buffer[Symbol.species];
 const float64Array = new Float64Array(1);
 const Uint8Float64Array = new Uint8Array(float64Array.buffer);
-const Int64Array = new BigInt64Array(1);
-const Int8Int64Array = new Int8Array(Int64Array.buffer);
 
 const ALLOC_BYTES = 2048;
+
+function encodeUint64(num) {
+  const hi = num / 0x100000000 >> 0;
+  const lo = num >>> 0;
+  return '\x06'
+    + CHR[lo & 0xff]
+    + CHR[lo >> 8 & 0xff]
+    + CHR[lo >> 16 & 0xff]
+    + CHR[lo >> 24 & 0xff]
+    + CHR[hi & 0xff]
+    + CHR[hi >> 8 & 0xff]
+    + CHR[hi >> 16 & 0xff]
+    + CHR[hi >> 24 & 0xff];
+}
 
 function encodeInt64(num) {
   const hi = (num / 0x100000000 >> 0) - 1;
@@ -24,19 +36,6 @@ function encodeInt64(num) {
     + CHR[hi >> 8 & 0xff]
     + CHR[hi >> 16 & 0xff]
     + CHR[hi >> 24 & 0xff];
-}
-
-function encodeBigInt(num) {
-  Int64Array[0] = num;
-  return '\x06'
-    + CHR[Int8Int64Array[0] & 0xff]
-    + CHR[Int8Int64Array[1] & 0xff]
-    + CHR[Int8Int64Array[2] & 0xff]
-    + CHR[Int8Int64Array[3] & 0xff]
-    + CHR[Int8Int64Array[4] & 0xff]
-    + CHR[Int8Int64Array[5] & 0xff]
-    + CHR[Int8Int64Array[6] & 0xff]
-    + CHR[Int8Int64Array[7] & 0xff];
 }
 
 class EncoderLE {
@@ -56,8 +55,6 @@ class EncoderLE {
     switch (typeof value) {
       case 'number':
         return value % 1 === 0 ? this.encodeInt(value) : this.encodeFloat64(value);
-      case 'bigint':
-        return encodeBigInt(value);
       case 'string':
         return this.encodeStr(value);
       case 'boolean':
@@ -67,6 +64,10 @@ class EncoderLE {
         if (isArray(value)) return this.encodeArray(value);
         return this.encodeObject(value);
     }
+  }
+
+  encodeNil() {
+    return '\x0a';
   }
 
   encodeFloat64(num) {
@@ -84,34 +85,65 @@ class EncoderLE {
   }
 
   encodeInt(num) {
-    // int 8
-    if (num >= -0x80 && num <= 0x7f) {
-      return '\x03'
-        + CHR[num & 0xff];
+    if (num < 0) {
+      // int_t 8
+      if (num > -0x80) {
+        return '\x03'
+          + CHR[num & 0xff];
+      }
+      // int_t 16
+      if (num > -0x8000) {
+        return '\x04'
+          + CHR[num & 0xff]
+          + CHR[num >> 8 & 0xff];
+      }
+      // int_t 32
+      if (num > -0x80000000) {
+        return '\x05'
+          + CHR[num & 0xff]
+          + CHR[num >> 8 & 0xff]
+          + CHR[num >> 16 & 0xff]
+          + CHR[num >> 24 & 0xff];
+      }
+      // int_t 64
+      if (num > -0x20000000000000) {
+        return encodeInt64(num);
+      }
+      // -Infinity
+      return '\x06\xff\xf0\x00\x00\x00\x00\x00\x00';
     }
-    // int 16
-    if (num >= -0x8000 && num <= 0x7fff) {
+    // (u)int_t 8
+    if (num < 0x80) {
+      return '\x03'
+        + CHR[num];
+    }
+    // (u)int_t 16
+    if (num < 0x8000) {
       return '\x04'
         + CHR[num & 0xff]
         + CHR[num >> 8 & 0xff];
     }
-    // int 32
-    if (num >= -0x80000000 && num <= 0x7fffffff) {
+    // (u)int_t 32
+    if (num < 0x80000000) {
       return '\x05'
         + CHR[num & 0xff]
         + CHR[num >> 8 & 0xff]
         + CHR[num >> 16 & 0xff]
         + CHR[num >> 24 & 0xff];
     }
-    // int 64 (safe int)
-    return encodeInt64(num);
+    // (u)int_t 64
+    if (num < 0x20000000000000) {
+      return encodeUint64(num);
+    }
+    // Infinity
+    return '\x06\x7f\xf0\x00\x00\x00\x00\x00\x00';
   }
 
   encodeStr(str) {
     let len = str.length, bin = '\x02\x03\x00';
     if (len === 0) return bin;
 
-    if (len < 10) {
+    if (len < 17) {
       bin = utf8toBin(str);
       len = bin.length;
     } else {
@@ -119,33 +151,33 @@ class EncoderLE {
         this.alloc = ALLOC_BYTES * ((len | ALLOC_BYTES) / 896 >> 0);
         this.buffer = new FastBuffer(this.alloc);
       }
-      len = this.buffer.utf8Write(str, 0);
+      len = this.buffer.latin1Write(str, 0);
       bin = this.buffer.latin1Slice(0, len);
     }
 
-    // int 8
-    if (len <= 0xff) {
+    // int_t 8
+    if (len < 0x80) {
       return '\x02\x03'
         + CHR[len]
         + bin;
     }
-    // int 16
-    if (num <= 0xffff) {
+    // int_t 16
+    if (len < 0x8000) {
       return '\x02\x04'
-        + CHR[num >> 8]
-        + CHR[num & 0xff]
+        + CHR[len & 0xff]
+        + CHR[len >> 8 & 0xff]
         + bin;
     }
-    // int 32
-    if (num <= 0xffffffff) {
+    // int_t 32
+    if (len < 0x80000000) {
       return '\x02\x05'
-        + CHR[num & 0xff]
-        + CHR[num >> 8 & 0xff]
-        + CHR[num >> 16 & 0xff]
-        + CHR[num >> 24 & 0xff]
+        + CHR[len & 0xff]
+        + CHR[len >> 8 & 0xff]
+        + CHR[len >> 16 & 0xff]
+        + CHR[len >> 24 & 0xff]
         + bin;
     }
-    // int 64
+    // int_t 64
     return '\x02'
         + encodeInt64(len)
         + bin;
@@ -156,19 +188,19 @@ class EncoderLE {
     if (len === 0) return '\x00\x03\x00';
 
     let data;
-    if (len <= 0xff) {
+    if (len < 0x80) { // int_t 8
       data = '\x00\x03'
         + CHR[len];
-    } else if (num <= 0xffff) {
+    } else if (len < 0x8000) { // int_t 16
       data = '\x00\x04'
-        + CHR[num >> 8]
-        + CHR[num & 0xff];
-    } else {
+        + CHR[len & 0xff]
+        + CHR[len >> 8 & 0xff];
+    } else { // int_t 32
       data = '\x00\x05'
-        + CHR[num & 0xff]
-        + CHR[num >> 8 & 0xff]
-        + CHR[num >> 16 & 0xff]
-        + CHR[num >> 24 & 0xff];
+        + CHR[len & 0xff]
+        + CHR[len >> 8 & 0xff]
+        + CHR[len >> 16 & 0xff]
+        + CHR[len >> 24 & 0xff];
     }
 
     for (let i = 0; i < len; i++) {
@@ -184,19 +216,19 @@ class EncoderLE {
     if (len === 0) return '\x01\x03\x00';
 
     let data;
-    if (len <= 0xff) {
+    if (len < 0x80) { // int_t 8
       data = '\x01\x03'
         + CHR[len];
-    } else if (num <= 0xffff) {
+    } else if (len < 0x8000) { // int_t 16
       data = '\x01\x04'
-        + CHR[num >> 8]
-        + CHR[num & 0xff];
+        + CHR[len >> 8]
+        + CHR[len & 0xff];
     } else {
       data = '\x01\x05'
-        + CHR[num & 0xff]
-        + CHR[num >> 8 & 0xff]
-        + CHR[num >> 16 & 0xff]
-        + CHR[num >> 24 & 0xff];
+        + CHR[len & 0xff]
+        + CHR[len >> 8 & 0xff]
+        + CHR[len >> 16 & 0xff]
+        + CHR[len >> 24 & 0xff];
     }
 
     for (let key, i = 0; i < len; i++) {

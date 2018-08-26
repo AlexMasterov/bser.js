@@ -2,9 +2,6 @@
 
 const { toDouble } = require('./ieee754');
 
-const Int64Array = new BigInt64Array(1);
-const Int8Int64Array = new Int8Array(Int64Array.buffer);
-
 class DecoderLE {
   constructor() {
     this.buffer = null;
@@ -30,21 +27,20 @@ class DecoderLE {
     const byte = this.buffer[this.offset++];
 
     switch (byte) {
-      case 0x0a: return null;
-      case 0x09: return false;
-      case 0x08: return true;
-
-      case 0x07: return this.decodeFloat64();
+      case 0x00: return this.decodeArray(this.parse());
+      case 0x01: return this.decodeObject(this.parse());
+      case 0x02: return this.decodeStr(this.parse());
 
       case 0x03: return this.decodeInt8();
       case 0x04: return this.decodeInt16();
       case 0x05: return this.decodeInt32();
       case 0x06: return this.decodeInt64();
+      case 0x07: return this.decodeFloat64();
 
-      case 0x02: return this.decodeStr(this.parse());
-      case 0x00: return this.decodeArray(this.parse());
-      case 0x01: return this.decodeObject(this.parse());
+      case 0x08: return true;
+      case 0x09: return false;
 
+      case 0x0a: return null;
       case 0x0b: return this.decodeTemplate();
     }
   }
@@ -76,7 +72,8 @@ class DecoderLE {
 
   decodeInt8() {
     const num = this.buffer[this.offset++];
-    return num & 0x80 ? num - 0x100 : num;
+
+    return (num & 0x80) === 0 ? num : num - 0x100;
   }
 
   decodeInt16() {
@@ -85,7 +82,7 @@ class DecoderLE {
 
     this.offset += 2;
 
-    return num & 0x8000 ? num - 0x10000 : num;
+    return (num & 0x8000) === 0 ? num : num - 0x10000;
   }
 
   decodeInt32() {
@@ -100,18 +97,18 @@ class DecoderLE {
   }
 
   decodeInt64() {
-    Int8Int64Array[0] = this.buffer[this.offset];
-    Int8Int64Array[1] = this.buffer[this.offset + 1];
-    Int8Int64Array[2] = this.buffer[this.offset + 2];
-    Int8Int64Array[3] = this.buffer[this.offset + 3];
-    Int8Int64Array[4] = this.buffer[this.offset + 4];
-    Int8Int64Array[5] = this.buffer[this.offset + 5];
-    Int8Int64Array[6] = this.buffer[this.offset + 6];
-    Int8Int64Array[7] = this.buffer[this.offset + 7];
+    const num = (this.buffer[this.offset]
+      | this.buffer[this.offset + 1] << 8
+      | this.buffer[this.offset + 2] << 16)
+      + this.buffer[this.offset + 3] * 0x1000000
+      + (this.buffer[this.offset + 4]
+        | this.buffer[this.offset + 5] << 8
+        | this.buffer[this.offset + 6] << 16
+        | this.buffer[this.offset + 7] << 24) * 0x100000000;
 
     this.offset += 8;
 
-    return Int64Array[0];
+    return num;
   }
 
   decodeStr(len) {
@@ -131,6 +128,9 @@ class DecoderLE {
   }
 
   decodeObject(size) {
+    if (size === -1) {
+      return 0x0a;
+    }
     const obj = {};
     while (size--) {
       obj[this.parse()] = this.parse();
