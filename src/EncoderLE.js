@@ -1,10 +1,9 @@
 'use strict';
 
-const { utf8toBin, CHR } = require('./utf8');
+const { CHR, FastBuffer, utf8toBin } = require('./optimizers');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
-const FastBuffer = Buffer[Symbol.species];
 const float64Array = new Float64Array(1);
 const Uint8Float64Array = new Uint8Array(float64Array.buffer);
 
@@ -39,9 +38,10 @@ function encodeInt64(num) {
 }
 
 class EncoderLE {
-  constructor() {
+  constructor({ bufferMinlen=15 } = {}) {
     this.alloc = 0;
     this.buffer = null;
+    this.bufferMinlen = bufferMinlen >>> 0;
   }
 
   encode(value) {
@@ -143,7 +143,7 @@ class EncoderLE {
     let len = str.length, bin = '\x02\x03\x00';
     if (len === 0) return bin;
 
-    if (len < 17) {
+    if (len < this.bufferMinlen) {
       bin = utf8toBin(str);
       len = bin.length;
     } else {

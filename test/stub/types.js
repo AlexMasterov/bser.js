@@ -1,6 +1,6 @@
 'use strict';
 
-const { utf8toBin, CHR } = require('../../src/utf8');
+const { CHR, utf8toBin } = require('../../src/optimizers');
 
 const bytes = (...bytes) => Uint8Array.from(bytes);
 const bytesN = (value, repeat) => Buffer.allocUnsafe(repeat).fill(value);
@@ -43,12 +43,14 @@ const types = {
     { name: 'min (32767)', value: strN('a', 32767),
       LE: bytes(0x05, 0x03, 0x80, 0x00, 0x00, 0x02, 0x04, 0xff, 0x7f, ...bytesN(0x61, 32767)) },
   ],
+  // -128 to 127
   'int8_t 03': [
     { name: 'min (-127)', value: -127,
       LE: bytes(0x03, 0x02, 0x03, 0x81) },
     { name: 'max (127)', value: 127,
       LE: bytes(0x03, 0x02, 0x03, 0x7f) },
   ],
+  // -32768 to 32767
   'int16_t 04': [
     { name: 'min neg (-128)', value: -128,
       LE: bytes(0x03, 0x03, 0x04, 0x80, 0xff) },
@@ -59,6 +61,7 @@ const types = {
     { name: 'max pos (32767)', value: 32767,
       LE: bytes(0x03, 0x03, 0x04, 0xff, 0x7f) },
   ],
+  // -2147483648 to 2147483647
   'int32_t 05': [
     { name: 'min neg (-32768)', value: -32768,
       LE: bytes(0x03, 0x05, 0x05, 0x00, 0x80, 0xff, 0xff) },

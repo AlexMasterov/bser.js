@@ -1,12 +1,13 @@
 'use strict';
 
-const { toDouble } = require('./ieee754');
+const { bufToUtf8, toDouble } = require('./optimizers');
 
 class DecoderLE {
-  constructor() {
+  constructor({ bufferMinlen=6 } = {}) {
     this.buffer = null;
     this.offset = 0;
     this.length = 0;
+    this.bufferMinlen = bufferMinlen >>> 0;
   }
 
   decode(buffer, start = 0, end = buffer.length) {
@@ -111,11 +112,10 @@ class DecoderLE {
     return num;
   }
 
-  decodeStr(len) {
-    return this.buffer.utf8Slice(
-      this.offset++,
-      this.offset += len - 1
-    );
+  decodeStr(length) {
+    return length < this.bufferMinlen
+      ? bufToUtf8(this.buffer, this.offset, this.offset += length)
+      : this.buffer.utf8Slice(this.offset, this.offset += length);
   }
 
   decodeArray(size) {
@@ -128,9 +128,6 @@ class DecoderLE {
   }
 
   decodeObject(size) {
-    if (size === -1) {
-      return 0x0a;
-    }
     const obj = {};
     while (size--) {
       obj[this.parse()] = this.parse();
