@@ -221,8 +221,8 @@ class EncoderLE {
         + CHR[len];
     } else if (len < 0x8000) { // int_t 16
       data = '\x01\x04'
-        + CHR[len >> 8]
-        + CHR[len & 0xff];
+        + CHR[len & 0xff]
+        + CHR[len >> 8];
     } else {
       data = '\x01\x05'
         + CHR[len & 0xff]
