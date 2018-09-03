@@ -1,13 +1,4 @@
-'use strict';
-
-const { endianness } = require('os');
-
-const endian = endianness();
-
-const Encoder = require(`./Encoder${endian}`);
-const Decoder = require(`./Decoder${endian}`);
-
-module.exports = {
-  Decoder,
-  Encoder,
-};
+exports.EncoderBE = require('./EncoderBE');
+exports.DecoderBE = require('./DecoderBE');
+exports.EncoderLE = require('./EncoderLE');
+exports.DecoderLE = require('./DecoderLE');
