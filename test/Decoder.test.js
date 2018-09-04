@@ -37,7 +37,9 @@ describe('Decoder', () => {
     .filter(([name]) => skip.indexOf(name) === -1);
 
   for (const [name, stub] of tests) {
-    describe(name, () => testBE(stub));
-    describe(name, () => testLE(stub));
+    describe(name, () => {
+      testBE(stub);
+      testLE(stub);
+    });
   }
 });

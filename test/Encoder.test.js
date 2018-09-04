@@ -31,7 +31,9 @@ function testLE(stub) {
 describe('Encoder', () => {
   const tests = Object.entries(types);
   for (const [name, stub] of tests) {
-    describe(name, () => testBE(stub));
-    describe(name, () => testLE(stub));
+    describe(name, () => {
+      testBE(stub);
+      testLE(stub);
+    });
   }
 });
