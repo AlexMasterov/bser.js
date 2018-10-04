@@ -30,7 +30,7 @@ function testLE(stub) {
 
 describe('Decoder', () => {
   const skip = [
-    'int64 overflow',
+    'int64',
   ];
 
   const tests = Object.entries(types)
