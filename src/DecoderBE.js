@@ -74,7 +74,7 @@ class DecoderBE {
   decodeInt8() {
     const num = this.buffer[this.offset++];
 
-    return (num & 0x80) === 0 ? num : num - 0x100;
+    return num < 0x80 ? num : num - 0x100;
   }
 
   decodeInt16() {
@@ -83,7 +83,7 @@ class DecoderBE {
 
     this.offset += 2;
 
-    return (num & 0x8000) === 0 ? num : num - 0x10000;
+    return num < 0x8000 ? num : num - 0x10000;
   }
 
   decodeInt32() {
