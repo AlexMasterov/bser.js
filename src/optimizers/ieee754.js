@@ -20,4 +20,6 @@ function toDouble(x, y) {
   return (sign << expt - 1023) * (1 + frac * 2 ** -52);
 }
 
-module.exports = { toDouble };
+module.exports = {
+  toDouble,
+};
