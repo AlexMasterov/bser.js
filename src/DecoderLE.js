@@ -129,7 +129,8 @@ class DecoderLE {
 
   decodeObject(size) {
     const obj = {};
-    while (size--) {
+    while (size > 0) {
+      size -= 1;
       obj[this.parse()] = this.parse();
     }
 
