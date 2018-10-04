@@ -38,10 +38,10 @@ function encodeInt64(num) {
 }
 
 class EncoderLE {
-  constructor({ bufferMinlen=15 } = {}) {
+  constructor({ bufferMinLen=15 } = {}) {
     this.alloc = 0;
     this.buffer = null;
-    this.bufferMinlen = bufferMinlen >>> 0;
+    this.bufferMinLen = bufferMinLen >>> 0;
   }
 
   encode(value) {
@@ -143,7 +143,7 @@ class EncoderLE {
     let len = str.length, bin = '\x02\x03\x00';
     if (len === 0) return bin;
 
-    if (len < this.bufferMinlen) {
+    if (len < this.bufferMinLen) {
       bin = utf8toBin(str);
       len = bin.length;
     } else {

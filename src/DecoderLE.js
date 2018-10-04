@@ -3,11 +3,11 @@
 const { bufToUtf8, toDouble } = require('./optimizers');
 
 class DecoderLE {
-  constructor({ bufferMinlen=6 } = {}) {
+  constructor({ bufferMinLen=6 } = {}) {
     this.buffer = null;
     this.offset = 0;
     this.length = 0;
-    this.bufferMinlen = bufferMinlen >>> 0;
+    this.bufferMinLen = bufferMinLen >>> 0;
   }
 
   decode(buffer, start = 0, end = buffer.length) {
@@ -113,7 +113,7 @@ class DecoderLE {
   }
 
   decodeStr(length) {
-    return length < this.bufferMinlen
+    return length < this.bufferMinLen
       ? bufToUtf8(this.buffer, this.offset, this.offset += length)
       : this.buffer.utf8Slice(this.offset, this.offset += length);
   }
