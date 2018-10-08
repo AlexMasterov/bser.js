@@ -1,7 +1,6 @@
 'use strict';
 
-const CHR = require('ascii-chr');
-const { FastBuffer, utf8toBin } = require('./optimizers');
+const { CHR, FastBuffer, utf8toBin } = require('./optimizers');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
