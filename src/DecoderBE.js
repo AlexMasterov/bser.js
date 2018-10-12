@@ -1,6 +1,9 @@
 'use strict';
 
-const { bufToUtf8, toDouble } = require('./optimizers');
+const { bufToUtf8 } = require('./optimizers');
+
+const f64 = new Float64Array(1);
+const u32f64 = new Uint32Array(f64.buffer);
 
 class DecoderBE {
   constructor({ bufferMinLen=6 } = {}) {
@@ -56,19 +59,19 @@ class DecoderBE {
   }
 
   decodeFloat64() {
-    const hi = this.buffer[this.offset] * 0x1000000
+    u32f64[1] = this.buffer[this.offset] * 0x1000000
       | this.buffer[this.offset + 1] << 16
       | this.buffer[this.offset + 2] << 8
       | this.buffer[this.offset + 3];
 
-    const lo = this.buffer[this.offset + 4] * 0x1000000
+    u32f64[0] = this.buffer[this.offset + 4] * 0x1000000
       | this.buffer[this.offset + 5] << 16
       | this.buffer[this.offset + 6] << 8
       | this.buffer[this.offset + 7];
 
     this.offset += 8;
 
-    return toDouble(lo, hi);
+    return f64[0];
   }
 
   decodeInt8() {
