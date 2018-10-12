@@ -4,8 +4,8 @@ const { CHR, FastBuffer, utf8toBin } = require('./optimizers');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
-const float64Array = new Float64Array(1);
-const Uint8Float64Array = new Uint8Array(float64Array.buffer);
+const f64 = new Float64Array(1);
+const u8f64 = new Uint8Array(f64.buffer);
 
 const ALLOC_BYTES = 2048;
 
@@ -71,17 +71,17 @@ class EncoderBE {
   }
 
   encodeFloat64(num) {
-    float64Array[0] = num;
+    f64[0] = num;
 
     return '\x07'
-      + CHR[Uint8Float64Array[7]]
-      + CHR[Uint8Float64Array[6]]
-      + CHR[Uint8Float64Array[5]]
-      + CHR[Uint8Float64Array[4]]
-      + CHR[Uint8Float64Array[3]]
-      + CHR[Uint8Float64Array[2]]
-      + CHR[Uint8Float64Array[1]]
-      + CHR[Uint8Float64Array[0]];
+      + CHR[u8f64[7]]
+      + CHR[u8f64[6]]
+      + CHR[u8f64[5]]
+      + CHR[u8f64[4]]
+      + CHR[u8f64[3]]
+      + CHR[u8f64[2]]
+      + CHR[u8f64[1]]
+      + CHR[u8f64[0]];
   }
 
   encodeInt(num) {
