@@ -1,23 +1,42 @@
+sudo: false
+
 language: node_js
 
 node_js:
-  - 8
-  - 9
-  - 10
+  - "8.3"
+  - "9"
+  - "10"
 
-sudo: false
+matrix:
+  include:
+    - name: "Node.js: nightly"
+      node_js: "node"
+      env:
+        - NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly
+    - name: "Node.js: canary"
+      node_js: "node"
+      env:
+        - NODEJS_ORG_MIRROR=https://nodejs.org/download/v8-canary
+
+  allow_failures:
+    - node_js: "node"
+      env:
+        - NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly
+    - node_js: "node"
+      env:
+        - NODEJS_ORG_MIRROR=https://nodejs.org/download/v8-canary
+
+branches:
+  only:
+    - master
 
 git:
-  depth: 1
+  depth: 3
 
 cache:
   directories:
     - node_modules
     - ~/.npm
-
-matrix:
-  allow_failures:
-    - node_js: 8
 
 script:
   - npm run test
