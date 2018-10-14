@@ -54,7 +54,7 @@ class EncoderLE {
   handle(value) {
     switch (typeof value) {
       case 'number':
-        return value % 1 === 0 ? this.encodeInt(value) : this.encodeFloat64(value);
+        return value % 1 === 0 ? this.encodeInt(value) : this.encodeReal(value);
       case 'string':
         return this.encodeStr(value);
       case 'boolean':
@@ -66,11 +66,15 @@ class EncoderLE {
     }
   }
 
-  encodeNil() {
+  encodeNull() {
     return '\x0a';
   }
 
-  encodeFloat64(num) {
+  encodeBool(value) {
+    return value ? '\x08' : '\x09';
+  }
+
+  encodeReal(num) {
     f64[0] = num;
 
     return '\x07'
