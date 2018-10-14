@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 const { EncoderBE, EncoderLE } = require('../src');
-const { toBuf, types } = require('./stub/types');
+const { toBuf, types } = require('./stub');
 
 function testBE(stub) {
   const encoder = new EncoderBE();

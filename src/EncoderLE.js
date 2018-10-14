@@ -110,7 +110,7 @@ class EncoderLE {
         return encodeInt64(num);
       }
       // -Infinity
-      return '\x06\xff\xf0\x00\x00\x00\x00\x00\x00';
+      return '\x06\xff\xff\xff\xff\xff\xff\xdf\xff';
     }
     // (u)int_t 8
     if (num < 0x80) {
@@ -136,7 +136,7 @@ class EncoderLE {
       return encodeUint64(num);
     }
     // Infinity
-    return '\x06\x7f\xf0\x00\x00\x00\x00\x00\x00';
+    return '\x06\x00\x00\x00\x00\x00\x00\x20\x00';
   }
 
   encodeStr(str) {

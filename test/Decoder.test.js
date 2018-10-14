@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 const { DecoderBE, DecoderLE } = require('../src');
-const { toBuf, types } = require('./stub/types');
+const { toBuf, types } = require('./stub');
 
 function testBE(stub) {
   for (const { name, value: expected, BE } of stub) {
@@ -29,12 +29,7 @@ function testLE(stub) {
 }
 
 describe('Decoder', () => {
-  const skip = [
-    'int64',
-  ];
-
-  const tests = Object.entries(types)
-    .filter(([name]) => skip.indexOf(name) === -1);
+  const tests = Object.entries(types);
 
   for (const [name, stub] of tests) {
     describe(name, () => {
