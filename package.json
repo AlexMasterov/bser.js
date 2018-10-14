@@ -30,7 +30,7 @@
     "coverage": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls"
   },
   "dependencies": {
-    "ascii-chr": "0.1.1"
+    "ascii-chr": "0.2.1"
   },
   "devDependencies": {
     "coveralls": "3.0.2",
