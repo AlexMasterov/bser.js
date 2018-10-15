@@ -1,8 +1,8 @@
 {
   "name": "fast-bser",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A fast and memory-efficient BSER serialization library",
-  "keywords": ["bser", "serialization", "binary"],
+  "keywords": ["bser", "binary", "serialization"],
   "license": "MIT",
   "author": {
     "name": "Alex Masterov",
@@ -34,7 +34,7 @@
   "devDependencies": {
     "coveralls": "3.0.2",
     "mocha": "5.2.0",
-    "nyc": "13.0.1"
+    "nyc": "13.1.0"
   },
   "nyc": {
     "cache": false,
