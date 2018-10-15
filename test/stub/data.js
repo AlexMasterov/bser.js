@@ -1,6 +1,7 @@
 'use strict';
 
-const { CHR, utf8toBin } = require('../../src/optimizers');
+const CHR = require('ascii-chr');
+const { utf8toBin } = require('utf8-binary');
 
 const byte = (...bytes) => Buffer.from(bytes);
 const byteN = (value, repeat) => Buffer.allocUnsafe(repeat).fill(value);

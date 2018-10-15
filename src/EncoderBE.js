@@ -1,11 +1,13 @@
 'use strict';
 
-const { CHR, FastBuffer, utf8toBin } = require('./optimizers');
+const CHR = require('ascii-chr');
+const { utf8toBin } = require('utf8-binary');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
 const f64 = new Float64Array(1);
 const u8f64 = new Uint8Array(f64.buffer);
+const FastBuffer = Buffer[Symbol.species];
 
 const ALLOC_BYTES = 2048;
 

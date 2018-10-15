@@ -1,9 +1,10 @@
 'use strict';
 
-const { bufToUtf8 } = require('./optimizers');
+const { binToUtf8 } = require('utf8-binary');
 
 const f64 = new Float64Array(1);
 const u32f64 = new Uint32Array(f64.buffer);
+const FastBuffer = Buffer[Symbol.species];
 
 class DecoderBE {
   constructor({ bufferMinLen=6 } = {}) {
@@ -117,7 +118,7 @@ class DecoderBE {
 
   decodeStr(length) {
     return length < this.bufferMinLen
-      ? bufToUtf8(this.buffer, this.offset, this.offset += length)
+      ? binToUtf8(this.buffer, this.offset, this.offset += length)
       : this.buffer.utf8Slice(this.offset, this.offset += length);
   }
 

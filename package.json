@@ -1,6 +1,6 @@
 {
   "name": "fast-bser",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A fast and memory-efficient BSER serialization library",
   "keywords": [
     "bser",
@@ -21,19 +21,20 @@
     "url": "https://github.com/AlexMasterov/fast-bser.js/issues"
   },
   "main": "./src/index.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
+  "directories": {
+    "test": "test/"
+  },
   "scripts": {
     "test": "nyc mocha test/*.test.js",
     "test-report": "nyc --reporter=html --reporter=text mocha test/*.test.js",
     "coverage": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls"
   },
-  "directories": {
-    "test": "test/"
-  },
-  "engines": {
-    "node": ">=8.3.0"
-  },
   "dependencies": {
-    "ascii-chr": "0.2.1"
+    "ascii-chr": "0.2.1",
+    "utf8-binary": "0.2.0"
   },
   "devDependencies": {
     "coveralls": "3.0.2",
