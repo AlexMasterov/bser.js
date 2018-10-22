@@ -35,7 +35,7 @@ describe('Decoder', () => {
     'int8_t',
     'int16_t',
     'int32_t',
-    'int64',
+    (global.BigInt ? 'bigint' : 'int64'),
   )((buffer, expected) => {
     const decoder = new DecoderLE();
     assert.deepStrictEqual(decoder.decode(buffer), expected);

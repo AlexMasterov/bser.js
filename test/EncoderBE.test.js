@@ -37,6 +37,11 @@ describe('Encoder BE', () => {
     assert.deepStrictEqual(encoder.encodeInt(value), expected.slice(4));
   });
 
+  test('bigint')((value, expected) => {
+    const encoder = new EncoderBE();
+    assert.deepStrictEqual(encoder.encode(value), expected);
+  });
+
   test('real')((value, expected) => {
     const encoder = new EncoderBE();
     assert.deepStrictEqual(encoder.encode(value), expected);

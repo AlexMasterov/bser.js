@@ -14,6 +14,7 @@ const byteStrN = (value, length) => {
   return Buffer.from(data, 'binary');
 };
 
+const bint = global.BigInt ? global.BigInt : Number;
 const strN = (value, repeat) => value.repeat(repeat);
 const arrN = (value, repeat) => new Array(repeat).fill(value);
 const objN = (value, size) => {
@@ -27,6 +28,7 @@ const objN = (value, size) => {
 
 module.exports = {
   arrN,
+  bint,
   byte,
   byteN,
   byteStrN,

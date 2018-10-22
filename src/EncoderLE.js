@@ -2,6 +2,7 @@
 
 const CHR = require('ascii-chr');
 const { utf8toBin } = require('utf8-binary');
+const { getEncoderInt64LE } = require('./methods');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
@@ -12,10 +13,6 @@ const FastBuffer = Buffer[Symbol.species];
 const ALLOC_BYTES = 2048;
 
 function encodeUint64(num) {
-  if (num > 0x1fffffffffffff) { // Infinity
-    return '\x06\x00\x00\x00\x00\x00\x00\x20\x00';
-  }
-
   const hi = num >>> 11 | 1;
   return '\x06'
     + CHR[num & 0xff]
@@ -29,10 +26,6 @@ function encodeUint64(num) {
 }
 
 function encodeInt64(num) {
-  if (num < -0x1fffffffffffff) { // -Infinity
-    return '\x06\xff\xff\xff\xff\xff\xff\xdf\xff';
-  }
-
   const hi = (num / 0x100000000 >> 0) - 1;
   const lo = num >>> 0;
   return '\x06'
@@ -48,6 +41,7 @@ function encodeInt64(num) {
 
 class EncoderLE {
   constructor({ bufferMinLen=15 } = {}) {
+    this.encodeBigInt = getEncoderInt64LE();
     this.alloc = 0;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
@@ -72,6 +66,10 @@ class EncoderLE {
         if (value === null) return '\x0a';
         if (isArray(value)) return this.encodeArray(value);
         return this.encodeObject(value);
+      case 'bigint':
+        return (value > 0xffffffff || value < -0x80000000)
+          ? this.encodeBigInt(value)
+          : this.encodeInt(Number(value));
     }
   }
 
@@ -79,8 +77,8 @@ class EncoderLE {
     return '\x0a';
   }
 
-  encodeBool(value) {
-    return value ? '\x08' : '\x09';
+  encodeBool(bool) {
+    return bool ? '\x08' : '\x09';
   }
 
   encodeReal(num) {
@@ -119,7 +117,11 @@ class EncoderLE {
           + CHR[num >> 24 & 0xff];
       }
       // int_t 64
-      return encodeInt64(num);
+      if (num > -0x20000000000000) {
+        return encodeInt64(num);
+      }
+      // -Infinity
+      return '\x06\xff\xff\xff\xff\xff\xff\xdf\xff';
     }
     // (u)int_t 8
     if (num < 0x80) {
@@ -141,7 +143,11 @@ class EncoderLE {
         + CHR[num >> 24 & 0xff];
     }
     // (u)int_t 64
-    return encodeUint64(num);
+    if (num < 0x20000000000000) {
+      return encodeUint64(num);
+    }
+    // Infinity
+    return '\x06\x00\x00\x00\x00\x00\x00\x20\x00';
   }
 
   encodeStr(str) {
@@ -192,16 +198,16 @@ class EncoderLE {
     const len = arr.length;
     if (len === 0) return '\x00\x03\x00';
 
-    let data;
+    let bin;
     if (len < 0x80) { // int_t 8
-      data = '\x00\x03'
+      bin = '\x00\x03'
         + CHR[len];
     } else if (len < 0x8000) { // int_t 16
-      data = '\x00\x04'
+      bin = '\x00\x04'
         + CHR[len & 0xff]
         + CHR[len >> 8 & 0xff];
     } else { // int_t 32
-      data = '\x00\x05'
+      bin = '\x00\x05'
         + CHR[len & 0xff]
         + CHR[len >> 8 & 0xff]
         + CHR[len >> 16 & 0xff]
@@ -209,10 +215,10 @@ class EncoderLE {
     }
 
     for (let i = 0; i < len; i++) {
-      data += this.handle(arr[i]);
+      bin += this.handle(arr[i]);
     }
 
-    return data;
+    return bin;
   }
 
   encodeObject(obj) {
@@ -220,16 +226,16 @@ class EncoderLE {
     const len = keys.length;
     if (len === 0) return '\x01\x03\x00';
 
-    let data;
+    let bin;
     if (len < 0x80) { // int_t 8
-      data = '\x01\x03'
+      bin = '\x01\x03'
         + CHR[len];
     } else if (len < 0x8000) { // int_t 16
-      data = '\x01\x04'
+      bin = '\x01\x04'
         + CHR[len & 0xff]
         + CHR[len >> 8];
     } else {
-      data = '\x01\x05'
+      bin = '\x01\x05'
         + CHR[len & 0xff]
         + CHR[len >> 8 & 0xff]
         + CHR[len >> 16 & 0xff]
@@ -238,11 +244,11 @@ class EncoderLE {
 
     for (let key, i = 0; i < len; i++) {
       key = keys[i];
-      data += this.encodeStr(key);
-      data += this.handle(obj[key]);
+      bin += this.encodeStr(key);
+      bin += this.handle(obj[key]);
     }
 
-    return data;
+    return bin;
   }
 }
 

@@ -13,7 +13,7 @@ const testStub = (name, stub) => process =>
 const test = (...stubs) => process =>
   stubs.forEach(type => testStub(type, types[type])(process));
 
-describe('Encoder BE', () => {
+describe('Encoder LE', () => {
   test('null')((value, expected) => {
     const encoder = new EncoderLE();
     assert.deepStrictEqual(encoder.encode(value), expected);
@@ -35,6 +35,11 @@ describe('Encoder BE', () => {
     const encoder = new EncoderLE();
     assert.deepStrictEqual(encoder.encode(value), expected);
     assert.deepStrictEqual(encoder.encodeInt(value), expected.slice(4));
+  });
+
+  test('bigint')((value, expected) => {
+    const encoder = new EncoderLE();
+    assert.deepStrictEqual(encoder.encode(value), expected);
   });
 
   test('real')((value, expected) => {

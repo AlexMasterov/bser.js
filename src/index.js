@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = class FastBser {
   static get EncoderBE() { return require('./EncoderBE'); }
   static get DecoderBE() { return require('./DecoderBE'); }
