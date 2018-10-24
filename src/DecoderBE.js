@@ -1,7 +1,7 @@
 'use strict';
 
 const { binToUtf8 } = require('utf8-bin');
-const { getDecoderInt64BE } = require('./methods');
+const { decodeInt64BE } = require('./methods');
 
 const f64 = new Float64Array(1);
 const u32f64 = new Uint32Array(f64.buffer);
@@ -9,7 +9,7 @@ const FastBuffer = Buffer[Symbol.species];
 
 class DecoderBE {
   constructor({ bufferMinLen=6 } = {}) {
-    this.decodeInt64 = getDecoderInt64BE();
+    this.decodeInt64 = decodeInt64BE;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
     this.offset = 0;

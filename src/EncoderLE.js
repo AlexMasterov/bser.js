@@ -2,7 +2,7 @@
 
 const CHR = require('ascii-chr');
 const { utf8toBin } = require('utf8-bin');
-const { getEncoderInt64LE } = require('./methods');
+const { encodeInt64LE } = require('./methods');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
@@ -41,7 +41,7 @@ function encodeInt64(num) {
 
 class EncoderLE {
   constructor({ bufferMinLen=15 } = {}) {
-    this.encodeBigInt = getEncoderInt64LE();
+    this.encodeBigInt = encodeInt64LE ? encodeInt64LE : this.encodeInt;
     this.alloc = 0;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;

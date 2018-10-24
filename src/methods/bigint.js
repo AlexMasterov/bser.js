@@ -9,7 +9,7 @@ const i8i64 = new Int8Array(i64.buffer);
 const u32u64 = new Uint32Array(u64.buffer);
 const i32i64 = new Int32Array(i64.buffer);
 
-function decodeBigInt64BE() {
+function decodeInt64BE() {
   i32i64[1] = this.buffer[this.offset] << 24
     | this.buffer[this.offset + 1] << 16
     | this.buffer[this.offset + 2] << 8
@@ -25,7 +25,7 @@ function decodeBigInt64BE() {
   return i64[0];
 }
 
-function decodeBigInt64LE() {
+function decodeInt64LE() {
   i32i64[0] = this.buffer[this.offset]
     | this.buffer[this.offset + 1] << 8
     | this.buffer[this.offset + 2] << 16
@@ -41,7 +41,7 @@ function decodeBigInt64LE() {
   return i64[0];
 }
 
-function encodeBigIntBE(bignum) {
+function encodeInt64BE(bignum) {
   if (bignum < 0) {
     i64[0] = bignum;
     return '\x06'
@@ -67,7 +67,7 @@ function encodeBigIntBE(bignum) {
     + CHR[u8u64[0]];
 }
 
-function encodeBigIntLE(bignum) {
+function encodeInt64LE(bignum) {
   if (bignum < 0) {
     i64[0] = bignum;
     return '\x06'
@@ -94,8 +94,8 @@ function encodeBigIntLE(bignum) {
 }
 
 module.exports = class BigInt64 {
-  static get decodeBigInt64BE() { return decodeBigInt64BE; }
-  static get decodeBigInt64LE() { return decodeBigInt64LE; }
-  static get encodeBigIntBE() { return encodeBigIntBE; }
-  static get encodeBigIntLE() { return encodeBigIntLE; }
+  static get decodeInt64BE() { return decodeInt64BE; }
+  static get decodeInt64LE() { return decodeInt64LE; }
+  static get encodeInt64BE() { return encodeInt64BE; }
+  static get encodeInt64LE() { return encodeInt64LE; }
 };
