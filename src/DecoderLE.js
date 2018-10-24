@@ -1,6 +1,6 @@
 'use strict';
 
-const { binToUtf8 } = require('utf8-binary');
+const { binToUtf8 } = require('utf8-bin');
 const { getDecoderInt64LE } = require('./methods');
 
 const f64 = new Float64Array(1);
