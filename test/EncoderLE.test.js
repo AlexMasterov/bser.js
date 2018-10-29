@@ -3,7 +3,7 @@
 const assert = require('assert');
 const { toBuf, types } = require('./stub');
 
-const EncoderLE  = require('../src/EncoderLE');
+const { EncoderLE } = require('../src');
 
 const testStub = (name, stub) => process =>
   describe(name, () => stub.forEach(({ name, value, LE: bin }) =>

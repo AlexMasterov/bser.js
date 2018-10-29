@@ -1,15 +1,13 @@
 'use strict';
 
 const { binToUtf8 } = require('utf8-bin');
-const { decodeInt64LE } = require('./methods');
+const { FastBuffer, f64, i64 } = require('./binary');
 
-const f64 = new Float64Array(1);
 const u32f64 = new Uint32Array(f64.buffer);
-const FastBuffer = Buffer[Symbol.species];
+const i32i64 = new Int32Array(i64.buffer);
 
 class DecoderLE {
   constructor({ bufferMinLen=6 } = {}) {
-    this.decodeInt64 = decodeInt64LE;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
     this.offset = 0;
@@ -101,6 +99,22 @@ class DecoderLE {
     this.offset += 4;
 
     return num;
+  }
+
+  decodeInt64() {
+    i32i64[0] = this.buffer[this.offset]
+      | this.buffer[this.offset + 1] << 8
+      | this.buffer[this.offset + 2] << 16
+      | this.buffer[this.offset + 3] << 24;
+
+    i32i64[1] = this.buffer[this.offset + 4]
+      | this.buffer[this.offset + 5] << 8
+      | this.buffer[this.offset + 6] << 16
+      | this.buffer[this.offset + 7] << 24;
+
+    this.offset += 8;
+
+    return i64[0];
   }
 
   decodeStr(length) {

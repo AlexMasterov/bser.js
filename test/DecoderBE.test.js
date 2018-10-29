@@ -3,7 +3,7 @@
 const assert = require('assert');
 const { toBuf, types } = require('./stub');
 
-const DecoderBE = require('../src/DecoderBE');
+const { DecoderBE } = require('../src');
 
 // assets module v8.x can't compare NaN and exceptions
 const isNode8 = process.version[1] === '8';
@@ -20,7 +20,7 @@ const testStub = (name, stub) => process =>
 const test = (...stubs) => process =>
   stubs.forEach(type => testStub(type, types[type])(process));
 
-describe('Decoder', () => {
+describe('Decoder BE', () => {
   test('null')((buffer, expected) => {
     const decoder = new DecoderBE();
     assert.deepStrictEqual(decoder.decode(buffer), expected);

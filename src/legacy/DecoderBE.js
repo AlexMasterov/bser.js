@@ -1,10 +1,9 @@
 'use strict';
 
 const { binToUtf8 } = require('utf8-bin');
-const { FastBuffer, f64, i64 } = require('./binary');
+const { FastBuffer, f64 } = require('./binary');
 
 const u32f64 = new Uint32Array(f64.buffer);
-const i32i64 = new Int32Array(i64.buffer);
 
 class DecoderBE {
   constructor({ bufferMinLen=6 } = {}) {
@@ -102,19 +101,19 @@ class DecoderBE {
   }
 
   decodeInt64() {
-    i32i64[1] = this.buffer[this.offset] << 24
-      | this.buffer[this.offset + 1] << 16
-      | this.buffer[this.offset + 2] << 8
-      | this.buffer[this.offset + 3];
-
-    i32i64[0] = this.buffer[this.offset + 4] << 24
-      | this.buffer[this.offset + 5] << 16
-      | this.buffer[this.offset + 6] << 8
-      | this.buffer[this.offset + 7];
-
+    
+      const num = (this.buffer[this.offset] << 24
+        | this.buffer[this.offset + 1] << 16
+        | this.buffer[this.offset + 2] << 8
+        | this.buffer[this.offset + 3]) * 0x100000000
+        + this.buffer[this.offset + 4] * 0x1000000
+        + (this.buffer[this.offset + 5] << 16
+          | this.buffer[this.offset + 6] << 8
+          | this.buffer[this.offset + 7]);
+  
     this.offset += 8;
 
-    return i64[0];
+    return num;
   }
 
   decodeStr(length) {

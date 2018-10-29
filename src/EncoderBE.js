@@ -1,20 +1,18 @@
 'use strict';
 
-const CHR = require('ascii-chr');
 const { utf8toBin } = require('utf8-bin');
-const { encodeInt64BE } = require('./methods');
+const { CHR, FastBuffer, f64, u64, i64 } = require('./binary');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
-const f64 = new Float64Array(1);
 const u8f64 = new Uint8Array(f64.buffer);
-const FastBuffer = Buffer[Symbol.species];
+const u8u64 = new Uint8Array(u64.buffer);
+const i8i64 = new Int8Array(i64.buffer);
 
 const ALLOC_BYTES = 2048;
 
 class EncoderBE {
   constructor({ bufferMinLen=15 } = {}) {
-    this.encodeBigInt = encodeInt64BE ? encodeInt64BE : this.encodeInt;
     this.alloc = 0;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
@@ -56,16 +54,15 @@ class EncoderBE {
 
   encodeReal(num) {
     f64[0] = num;
-
     return '\x07'
-      + CHR[u8f64[7]]
-      + CHR[u8f64[6]]
-      + CHR[u8f64[5]]
-      + CHR[u8f64[4]]
-      + CHR[u8f64[3]]
-      + CHR[u8f64[2]]
-      + CHR[u8f64[1]]
-      + CHR[u8f64[0]];
+      + CHR(u8f64[7])
+      + CHR(u8f64[6])
+      + CHR(u8f64[5])
+      + CHR(u8f64[4])
+      + CHR(u8f64[3])
+      + CHR(u8f64[2])
+      + CHR(u8f64[1])
+      + CHR(u8f64[0]);
   }
 
   encodeInt(num) {
@@ -73,21 +70,21 @@ class EncoderBE {
       // int_t 8
       if (num > -0x80) {
         return '\x03'
-          + CHR[num & 0xff];
+          + CHR(num & 0xff);
       }
       // int_t 16
       if (num > -0x8000) {
         return '\x04'
-          + CHR[num >> 8 & 0xff]
-          + CHR[num & 0xff];
+          + CHR(num >> 8 & 0xff)
+          + CHR(num & 0xff);
       }
       // int_t 32
       if (num > -0x80000000) {
         return '\x05'
-          + CHR[num >> 24 & 0xff]
-          + CHR[num >> 16 & 0xff]
-          + CHR[num >> 8 & 0xff]
-          + CHR[num & 0xff];
+          + CHR(num >> 24 & 0xff)
+          + CHR(num >> 16 & 0xff)
+          + CHR(num >> 8 & 0xff)
+          + CHR(num & 0xff);
       }
       // int_t 64
       if (num > -0x20000000000000) {
@@ -103,21 +100,21 @@ class EncoderBE {
     // (u)int_t 8
     if (num < 0x80) {
       return '\x03'
-        + CHR[num];
+        + CHR(num);
     }
     // (u)int_t 16
     if (num < 0x8000) {
       return '\x04'
-        + CHR[num >> 8 & 0xff]
-        + CHR[num & 0xff];
+        + CHR(num >> 8 & 0xff)
+        + CHR(num & 0xff);
     }
     // (u)int_t 32
     if (num < 0x80000000) {
       return '\x05'
-        + CHR[num >> 24 & 0xff]
-        + CHR[num >> 16 & 0xff]
-        + CHR[num >> 8 & 0xff]
-        + CHR[num & 0xff];
+        + CHR(num >> 24 & 0xff)
+        + CHR(num >> 16 & 0xff)
+        + CHR(num >> 8 & 0xff)
+        + CHR(num & 0xff);
     }
     // (u)int_t 64
     if (num < 0x20000000000000) {
@@ -129,6 +126,32 @@ class EncoderBE {
     }
     // Infinity
     return '\x06\x00\x20\x00\x00\x00\x00\x00\x00';
+  }
+
+  encodeBigInt(bignum) {
+    if (bignum < 0) {
+      i64[0] = bignum;
+      return '\x06'
+        + CHR(i8i64[7] & 0xff)
+        + CHR(i8i64[6] & 0xff)
+        + CHR(i8i64[5] & 0xff)
+        + CHR(i8i64[4] & 0xff)
+        + CHR(i8i64[3] & 0xff)
+        + CHR(i8i64[2] & 0xff)
+        + CHR(i8i64[1] & 0xff)
+        + CHR(i8i64[0] & 0xff);
+    }
+
+    u64[0] = bignum;
+    return '\x06'
+      + CHR(u8u64[7])
+      + CHR(u8u64[6])
+      + CHR(u8u64[5])
+      + CHR(u8u64[4])
+      + CHR(u8u64[3])
+      + CHR(u8u64[2])
+      + CHR(u8u64[1])
+      + CHR(u8u64[0]);
   }
 
   encodeStr(str) {
@@ -150,23 +173,23 @@ class EncoderBE {
     // int_t 8
     if (len < 0x80) {
       return '\x02\x03'
-        + CHR[len]
+        + CHR(len)
         + bin;
     }
     // int_t 16
     if (len < 0x8000) {
       return '\x02\x04'
-        + CHR[len >> 8 & 0xff]
-        + CHR[len & 0xff]
+        + CHR(len >> 8 & 0xff)
+        + CHR(len & 0xff)
         + bin;
     }
     // int_t 32
     if (len < 0x80000000) {
       return '\x02\x05'
-        + CHR[len >> 24 & 0xff]
-        + CHR[len >> 16 & 0xff]
-        + CHR[len >> 8 & 0xff]
-        + CHR[len & 0xff]
+        + CHR(len >> 24 & 0xff)
+        + CHR(len >> 16 & 0xff)
+        + CHR(len >> 8 & 0xff)
+        + CHR(len & 0xff)
         + bin;
     }
     // int_t 64
@@ -182,17 +205,17 @@ class EncoderBE {
     let bin;
     if (len < 0x80) { // int_t 8
       bin = '\x00\x03'
-        + CHR[len];
+        + CHR(len);
     } else if (len < 0x8000) { // int_t 16
       bin = '\x00\x04'
-        + CHR[len >> 8 & 0xff]
-        + CHR[len & 0xff];
+        + CHR(len >> 8 & 0xff)
+        + CHR(len & 0xff);
     } else { // int_t 32
       bin = '\x00\x05'
-        + CHR[len >> 24 & 0xff]
-        + CHR[len >> 16 & 0xff]
-        + CHR[len >> 8 & 0xff]
-        + CHR[len & 0xff];
+        + CHR(len >> 24 & 0xff)
+        + CHR(len >> 16 & 0xff)
+        + CHR(len >> 8 & 0xff)
+        + CHR(len & 0xff);
     }
 
     for (let i = 0; i < len; i++) {
@@ -210,17 +233,17 @@ class EncoderBE {
     let bin;
     if (len < 0x80) { // int_t 8
       bin = '\x01\x03'
-        + CHR[len];
+        + CHR(len);
     } else if (len < 0x8000) { // int_t 16
       bin = '\x01\x04'
-        + CHR[len >> 8]
-        + CHR[len & 0xff];
+        + CHR(len >> 8)
+        + CHR(len & 0xff);
     } else {
       bin = '\x01\x05'
-        + CHR[len >> 24 & 0xff]
-        + CHR[len >> 16 & 0xff]
-        + CHR[len >> 8 & 0xff]
-        + CHR[len & 0xff];
+        + CHR(len >> 24 & 0xff)
+        + CHR(len >> 16 & 0xff)
+        + CHR(len >> 8 & 0xff)
+        + CHR(len & 0xff);
     }
 
     for (let key, i = 0; i < len; i++) {
@@ -234,14 +257,14 @@ class EncoderBE {
 }
 
 function encodeInt64(hi, lo) {
-  return CHR[hi >> 24 & 0xff]
-    + CHR[hi >> 16 & 0xff]
-    + CHR[hi >> 8 & 0xff]
-    + CHR[hi & 0xff]
-    + CHR[lo >> 24 & 0xff]
-    + CHR[lo >> 16 & 0xff]
-    + CHR[lo >> 8 & 0xff]
-    + CHR[lo & 0xff];
+  return CHR(hi >> 24 & 0xff)
+    + CHR(hi >> 16 & 0xff)
+    + CHR(hi >> 8 & 0xff)
+    + CHR(hi & 0xff)
+    + CHR(lo >> 24 & 0xff)
+    + CHR(lo >> 16 & 0xff)
+    + CHR(lo >> 8 & 0xff)
+    + CHR(lo & 0xff);
 }
 
 module.exports = EncoderBE;

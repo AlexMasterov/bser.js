@@ -1,7 +1,8 @@
 'use strict';
 
-const CHR = require('ascii-chr');
 const { utf8toBin } = require('utf8-bin');
+
+const CHR = String.fromCharCode;
 
 const byte = (...bytes) => Buffer.from(bytes);
 const byteN = (value, repeat) => Buffer.allocUnsafe(repeat).fill(value);
@@ -9,7 +10,7 @@ const byteStrN = (value, length) => {
   let data = '';
   for (let key, i = 0; i < length; i++) {
     key = utf8toBin(String(i));
-    data += '\x02\x03' + CHR[key.length] + key + value;
+    data += '\x02\x03' + CHR(key.length) + key + value;
   }
   return Buffer.from(data, 'binary');
 };
