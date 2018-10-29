@@ -12,33 +12,6 @@ const FastBuffer = Buffer[Symbol.species];
 
 const ALLOC_BYTES = 2048;
 
-function encodeUint64(num) {
-  const hi = num >>> 11 | 1;
-  return '\x06'
-    + CHR[hi >> 24 & 0xff]
-    + CHR[hi >> 16 & 0xff]
-    + CHR[hi >> 8 & 0xff]
-    + CHR[hi & 0xff]
-    + CHR[num >> 24 & 0xff]
-    + CHR[num >> 16 & 0xff]
-    + CHR[num >> 8 & 0xff]
-    + CHR[num & 0xff];
-}
-
-function encodeInt64(num) {
-  const hi = (num / 0x100000000 >> 0) - 1;
-  const lo = num >>> 0;
-  return '\x06'
-    + CHR[hi >> 24 & 0xff]
-    + CHR[hi >> 16 & 0xff]
-    + CHR[hi >> 8 & 0xff]
-    + CHR[hi & 0xff]
-    + CHR[lo >> 24 & 0xff]
-    + CHR[lo >> 16 & 0xff]
-    + CHR[lo >> 8 & 0xff]
-    + CHR[lo & 0xff];
-}
-
 class EncoderBE {
   constructor({ bufferMinLen=15 } = {}) {
     this.encodeBigInt = encodeInt64BE ? encodeInt64BE : this.encodeInt;
@@ -118,7 +91,11 @@ class EncoderBE {
       }
       // int_t 64
       if (num > -0x20000000000000) {
-        return encodeInt64(num);
+        return '\x06'
+          + encodeInt64(
+            (num / 0x100000000 >> 0) - 1,
+            num >>> 0
+          );
       }
       // -Infinity
       return '\x06\xff\xdf\xff\xff\xff\xff\xff\xff';
@@ -144,7 +121,11 @@ class EncoderBE {
     }
     // (u)int_t 64
     if (num < 0x20000000000000) {
-      return encodeUint64(num);
+      return '\x06'
+        + encodeInt64(
+          num >>> 11 | 1,
+          num
+        );
     }
     // Infinity
     return '\x06\x00\x20\x00\x00\x00\x00\x00\x00';
@@ -250,6 +231,17 @@ class EncoderBE {
 
     return bin;
   }
+}
+
+function encodeInt64(hi, lo) {
+  return CHR[hi >> 24 & 0xff]
+    + CHR[hi >> 16 & 0xff]
+    + CHR[hi >> 8 & 0xff]
+    + CHR[hi & 0xff]
+    + CHR[lo >> 24 & 0xff]
+    + CHR[lo >> 16 & 0xff]
+    + CHR[lo >> 8 & 0xff]
+    + CHR[lo & 0xff];
 }
 
 module.exports = EncoderBE;
