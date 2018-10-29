@@ -7,6 +7,11 @@ const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
 const u8f64 = new Uint8Array(f64.buffer);
 
+const Bool = 'boolean';
+const Num = 'number';
+const Str = 'string';
+const Obj = 'object';
+
 const ALLOC_BYTES = 2048;
 
 class EncoderLE {
@@ -26,13 +31,13 @@ class EncoderLE {
 
   handle(value) {
     switch (typeof value) {
-      case 'number':
-        return value % 1 === 0 ? this.encodeInt(value) : this.encodeReal(value);
-      case 'string':
+      case Str:
         return this.encodeStr(value);
-      case 'boolean':
+      case Num:
+        return value % 1 === 0 ? this.encodeInt(value) : this.encodeReal(value);
+      case Bool:
         return value ? '\x08' : '\x09';
-      case 'object':
+      case Obj:
         if (value === null) return '\x0a';
         if (isArray(value)) return this.encodeArray(value);
         return this.encodeObject(value);
