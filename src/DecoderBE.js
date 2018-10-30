@@ -29,7 +29,8 @@ class DecoderBE {
   }
 
   parse() {
-    const byte = this.buffer[this.offset++];
+    const byte = this.buffer[this.offset];
+    this.offset += 1;
 
     switch (byte) {
       case 0x00: return this.decodeArray(this.parse());
@@ -51,7 +52,8 @@ class DecoderBE {
   }
 
   decodePDU() {
-    const byte = this.buffer[this.offset++];
+    const byte = this.buffer[this.offset];
+    this.offset += 1;
 
     if (byte === 0x03) return this.decodeInt8();
     if (byte === 0x04) return this.decodeInt16();
@@ -76,7 +78,8 @@ class DecoderBE {
   }
 
   decodeInt8() {
-    const num = this.buffer[this.offset++];
+    const num = this.buffer[this.offset];
+    this.offset += 1;
 
     return num < 0x80 ? num : num - 0x100;
   }
@@ -151,7 +154,7 @@ class DecoderBE {
       const obj = {};
       for (let idx = 0; idx < keys.length; ++idx) {
         if (this.buffer[this.offset] === 0x0c) {
-          this.offset++;
+          this.offset += 1;
           continue;
         }
         obj[keys[idx]] = this.parse();
