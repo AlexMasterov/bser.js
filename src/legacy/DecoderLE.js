@@ -1,7 +1,7 @@
 'use strict';
 
 const { binToUtf8 } = require('utf8-bin');
-const { FastBuffer, f64 } = require('./binary');
+const { f64 } = require('./binary');
 
 const u32f64 = new Uint32Array(f64.buffer);
 

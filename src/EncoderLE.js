@@ -1,10 +1,11 @@
 'use strict';
 
 const { utf8toBin } = require('utf8-bin');
-const { CHR, FastBuffer, f64, u64, i64 } = require('./binary');
+const { CHR, f64, u64, i64 } = require('./binary');
 
 const isArray = Array.isArray;
 const ObjectKeys = Object.keys;
+const alloc = Buffer.allocUnsafe;
 const u8f64 = new Uint8Array(f64.buffer);
 const u8u64 = new Uint8Array(u64.buffer);
 const i8i64 = new Int8Array(i64.buffer);
@@ -169,8 +170,8 @@ class EncoderLE {
       len = bin.length;
     } else {
       if (len > this.alloc) {
-        this.alloc = ALLOC_BYTES * ((len | ALLOC_BYTES) / 896 >> 0);
-        this.buffer = new FastBuffer(this.alloc);
+        this.alloc = ALLOC_BYTES * (len >>> 10 | 2);
+        this.buffer = alloc(this.alloc);
       }
       len = this.buffer.latin1Write(str, 0);
       bin = this.buffer.latin1Slice(0, len);
