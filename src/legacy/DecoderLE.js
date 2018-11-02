@@ -13,7 +13,7 @@ class DecoderLE {
     this.length = 0;
   }
 
-  decode(buffer, start = 0, end = buffer.length) {
+  decode(buffer, start=0, end=buffer.length) {
     this.buffer = buffer;
 
     if (start === 0) {
@@ -80,7 +80,7 @@ class DecoderLE {
     const num = this.buffer[this.offset];
     this.offset += 1;
 
-    return num < 0x80 ? num : num - 0x100;
+    return (num < 0x80) ? num : num - 0x100;
   }
 
   decodeInt16() {
@@ -89,7 +89,7 @@ class DecoderLE {
 
     this.offset += 2;
 
-    return num < 0x8000 ? num : num - 0x10000;
+    return (num < 0x8000) ? num : num - 0x10000;
   }
 
   decodeInt32() {
@@ -119,7 +119,7 @@ class DecoderLE {
   }
 
   decodeStr(length) {
-    return length < this.bufferMinLen
+    return (length < this.bufferMinLen)
       ? binToUtf8(this.buffer, this.offset, this.offset += length)
       : this.buffer.utf8Slice(this.offset, this.offset += length);
   }

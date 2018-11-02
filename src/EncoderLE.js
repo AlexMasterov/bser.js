@@ -36,7 +36,7 @@ class EncoderLE {
       case Str:
         return this.encodeStr(value);
       case Num:
-        return value % 1 === 0 ? this.encodeInt(value) : this.encodeReal(value);
+        return (value % 1 === 0) ? this.encodeInt(value) : this.encodeReal(value);
       case Bool:
         return value ? '\x08' : '\x09';
       case Obj:
