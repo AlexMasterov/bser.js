@@ -17,10 +17,10 @@ function patchEncoder() {
       // types
         .replace(/[, ]+u64[, ]/, ' ')
         .replace(/[, ]+i64[, ]/, ' ')
-        .replace(/\s+const (u8u64|i8i64|BigNum)[^;]+;/g, '')
+        .replace(/const (u8u64|i8i64|BigNum)(?:[^;]+)/g, '')
       // encodeBigInt => encodeInt
         .replace(/(constructor.+)/, '$1\r\n    this.encodeBigInt = this.encodeInt;')
-        .replace(/\s+case ('bigint'|BigNum):[^;]+;/, '')
+        .replace(/\s+case ('bigint'|BigNum)(?:[^;]+)/, '')
         .replace(/if \(bignum < 0\)[^}]+}\r\n/, '')
         .replace(/\s+encodeBigInt\(bignum\)[^}]+}/, '');
     },

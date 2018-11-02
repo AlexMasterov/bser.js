@@ -7,7 +7,7 @@ const u32f64 = new Uint32Array(f64.buffer);
 const i32i64 = new Int32Array(i64.buffer);
 
 class DecoderBE {
-  constructor({ bufferMinLen=6 } = {}) {
+  constructor({ bufferMinLen=15 } = {}) {
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
     this.offset = 0;
