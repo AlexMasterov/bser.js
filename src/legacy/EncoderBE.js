@@ -130,8 +130,8 @@ class EncoderBE {
   }
 
   encodeStr(str) {
-    let len = str.length, bin = '\x02\x03\x00';
-    if (len === 0) return bin;
+    let len = str.length, bin;
+    if (len === 0) return '\x02\x03\x00';
 
     if (len < this.bufferMinLen) {
       bin = utf8toBin(str);
