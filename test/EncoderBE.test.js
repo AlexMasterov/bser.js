@@ -1,52 +1,58 @@
 'use strict';
 
-const assert = require('assert');
-const { toBuf, types } = require('./stub');
+const { deepStrictEqual } = require('assert');
+const { toBuf, stub } = require('./stub');
 
 const { EncoderBE } = require('../src');
 
-const testStub = (name, stub) => process =>
-  describe(name, () => stub.forEach(({ name, value, BE: bin }) =>
-    it(name, () => process(value, toBuf(bin).latin1Slice()))
-  ));
-
-const test = (...stubs) => process =>
-  stubs.forEach(type => testStub(type, types[type])(process));
+const test = (...stubs) => spec => stubs.forEach(name =>
+  describe(name, () => stub[name].forEach(({ name, value, BE: bin }) =>
+    it(name, () => spec(value, toBuf(bin).latin1Slice()))
+  )));
 
 describe('Encoder BE', () => {
   test('null')((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
-    assert.deepStrictEqual(encoder.encodeNull(), expected.slice(4));
+    deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encodeNull(), expected.slice(4));
   });
 
   test('boolean')((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
-    assert.deepStrictEqual(encoder.encodeBool(value), expected.slice(4));
-  });
-
-  test(
-    'int8_t',
-    'int16_t',
-    'int32_t',
-    'int64',
-  )((value, expected) => {
-    const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
-    assert.deepStrictEqual(encoder.encodeInt(value), expected.slice(4));
-  });
-
-  test('bigint')((value, expected) => {
-    const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encodeBool(value), expected.slice(4));
   });
 
   test('real')((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
-    assert.deepStrictEqual(encoder.encodeReal(value), expected.slice(4));
+    deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encodeReal(value), expected.slice(4));
   });
+
+  const integers = [
+    'int8_t',
+    'int16_t',
+    'int32_t',
+    'int64_t_safe',
+  ];
+
+  test(
+    ...integers,
+    'int64_t_safe_overflow'
+  )((value, expected) => {
+    const encoder = new EncoderBE();
+    deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encodeInt(value), expected.slice(4));
+  });
+
+  global.BigInt &&
+    test(
+      ...integers,
+      'int64_t'
+    )((value, expected) => {
+      const encoder = new EncoderBE();
+      deepStrictEqual(encoder.encode(BigInt(value)), expected);
+    });
 
   test(
     'str8_t',
@@ -55,7 +61,7 @@ describe('Encoder BE', () => {
     'utf8',
   )((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encode(value), expected);
   });
 
   test(
@@ -64,7 +70,7 @@ describe('Encoder BE', () => {
     'arr32_t',
   )((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encode(value), expected);
   });
 
   test(
@@ -73,6 +79,6 @@ describe('Encoder BE', () => {
     'obj32_t',
   )((value, expected) => {
     const encoder = new EncoderBE();
-    assert.deepStrictEqual(encoder.encode(value), expected);
+    deepStrictEqual(encoder.encode(value), expected);
   });
 });

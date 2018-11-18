@@ -1,49 +1,52 @@
 'use strict';
 
-const assert = require('assert');
-const { toBuf, types } = require('./stub');
+const { deepStrictEqual, ok } = require('assert');
+const { toBuf, stub } = require('./stub');
+
+// assets module v8.x can't compare NaN and exceptions
+const isNodeX = process.version[2] === '.';
+const assertFloatEqual = (actual, expected) =>
+  isNodeX && Number.isNaN(expected)
+    ? ok(Number.isNaN(actual))
+    : deepStrictEqual(actual, expected);
 
 const { DecoderLE } = require('../src');
 
-// assets module v8.x can't compare NaN and exceptions
-const isNode8 = process.version[1] === '8';
-const assertDeepStrictEqualNode8 = (actual, expected) =>
-  isNode8 && Number.isNaN(expected)
-    ? assert.ok(Number.isNaN(actual))
-    : assert.deepStrictEqual(actual, expected);
-
-const testStub = (name, stub) => process =>
-  describe(name, () => stub.forEach(({ name, value, LE: buffer }) =>
-    it(name, () => process(toBuf(buffer), value))
-  ));
-
-const test = (...stubs) => process =>
-  stubs.forEach(type => testStub(type, types[type])(process));
+const test = (...stubs) => spec => stubs.forEach(name =>
+  describe(name, () => stub[name].forEach(({ name, value, LE: bin }) =>
+    it(name, () => spec(toBuf(bin), value))
+  )));
 
 describe('Decoder LE', () => {
   test('null')((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
   });
 
   test('boolean')((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
+  });
+
+  test('real')((buffer, expected) => {
+    const decoder = new DecoderLE();
+    assertFloatEqual(decoder.decode(buffer), expected);
   });
 
   test(
     'int8_t',
     'int16_t',
     'int32_t',
-    (global.BigInt ? 'bigint' : 'int64'),
+    (global.BigInt ? 'int64_t' : 'int64_t_safe'),
   )((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
   });
 
-  test('real')((buffer, expected) => {
+  test('int64_t_safe_overflow')((buffer, expected) => {
     const decoder = new DecoderLE();
-    assertDeepStrictEqualNode8(decoder.decode(buffer), expected);
+    const actual = decoder.decode(buffer);
+    deepStrictEqual(Number.isFinite(actual), false);
   });
 
   test(
@@ -53,7 +56,7 @@ describe('Decoder LE', () => {
     'utf8',
   )((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
   });
 
   test(
@@ -62,7 +65,7 @@ describe('Decoder LE', () => {
     'arr32_t',
   )((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
   });
 
   test(
@@ -71,6 +74,6 @@ describe('Decoder LE', () => {
     'obj32_t',
   )((buffer, expected) => {
     const decoder = new DecoderLE();
-    assert.deepStrictEqual(decoder.decode(buffer), expected);
+    deepStrictEqual(decoder.decode(buffer), expected);
   });
 });

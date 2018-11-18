@@ -93,7 +93,7 @@ class EncoderLE {
           + CHR(num >> 16 & 0xff)
           + CHR(num >> 24 & 0xff);
       }
-      // int_t 64
+      // int_t 64 safe
       if (num > -0x20000000000000) {
         return '\x06'
           + encodeInt64(
@@ -102,7 +102,7 @@ class EncoderLE {
           );
       }
       // -Infinity
-      return '\x06\xff\xff\xff\xff\xff\xff\xdf\xff';
+      return '\x07\x00\x00\x00\x00\x00\x00\xf0\x7f';
     }
     // (u)int_t 8
     if (num < 0x80) {
@@ -123,7 +123,7 @@ class EncoderLE {
         + CHR(num >> 16 & 0xff)
         + CHR(num >> 24 & 0xff);
     }
-    // (u)int_t 64
+    // (u)int_t 64 safe
     if (num < 0x20000000000000) {
       return '\x06'
         + encodeInt64(
@@ -132,7 +132,7 @@ class EncoderLE {
         );
     }
     // Infinity
-    return '\x06\x00\x00\x00\x00\x00\x00\x20\x00';
+    return '\x07\x00\x00\x00\x00\x10\x00\xf0\xff';
   }
 
   encodeBigInt(bignum) {
@@ -177,20 +177,20 @@ class EncoderLE {
       bin = this.buffer.latin1Slice(0, len);
     }
 
-    // int_t 8
+    // str_t 8
     if (len < 0x80) {
       return '\x02\x03'
         + CHR(len)
         + bin;
     }
-    // int_t 16
+    // str_t 16
     if (len < 0x8000) {
       return '\x02\x04'
         + CHR(len & 0xff)
         + CHR(len >> 8 & 0xff)
         + bin;
     }
-    // int_t 32
+    // str_t 32
     if (len < 0x80000000) {
       return '\x02\x05'
         + CHR(len & 0xff)
@@ -199,10 +199,13 @@ class EncoderLE {
         + CHR(len >> 24 & 0xff)
         + bin;
     }
-    // int_t 64
+    // str_t 64
     return '\x02'
-        + encodeInt64(len)
-        + bin;
+      + CHR(len & 0xff)
+      + CHR(len >> 8 & 0xff)
+      + CHR(len >> 16 & 0xff)
+      + CHR(len >> 24 & 0xff)
+      + bin;
   }
 
   encodeArray(arr) {
@@ -210,14 +213,14 @@ class EncoderLE {
     if (len === 0) return '\x00\x03\x00';
 
     let bin;
-    if (len < 0x80) { // int_t 8
+    if (len < 0x80) { // array_t 8
       bin = '\x00\x03'
         + CHR(len);
-    } else if (len < 0x8000) { // int_t 16
+    } else if (len < 0x8000) { // array_t 16
       bin = '\x00\x04'
         + CHR(len & 0xff)
         + CHR(len >> 8 & 0xff);
-    } else { // int_t 32
+    } else { // array_t 32
       bin = '\x00\x05'
         + CHR(len & 0xff)
         + CHR(len >> 8 & 0xff)
@@ -238,14 +241,14 @@ class EncoderLE {
     if (len === 0) return '\x01\x03\x00';
 
     let bin;
-    if (len < 0x80) { // int_t 8
+    if (len < 0x80) { // object_t 8
       bin = '\x01\x03'
         + CHR(len);
-    } else if (len < 0x8000) { // int_t 16
+    } else if (len < 0x8000) { // object_t 16
       bin = '\x01\x04'
         + CHR(len & 0xff)
         + CHR(len >> 8);
-    } else {
+    } else { // object_t 32
       bin = '\x01\x05'
         + CHR(len & 0xff)
         + CHR(len >> 8 & 0xff)
