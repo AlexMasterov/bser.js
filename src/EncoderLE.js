@@ -17,17 +17,17 @@ const BigNum = 'bigint';
 const Str = 'string';
 const Obj = 'object';
 
-const ALLOC_BYTES = 2048;
-
 class EncoderLE {
   constructor({
     objectKeys='ascii',
     bufferMinLen=15,
+    bufferMinAlloc=2048,
   } = {}) {
     this.encodeObjectKeys = (objectKeys === 'ascii') ? encodeAsciiLE : this.encodeStr;
-    this.alloc = 0;
     this.buffer = null;
+    this.bufferAlloc = 0;
     this.bufferMinLen = bufferMinLen >>> 0;
+    this.bufferMinAlloc = bufferMinAlloc >>> 0;
   }
 
   encode(value) {
@@ -174,11 +174,11 @@ class EncoderLE {
       bin = utf8toBin(str);
       len = bin.length;
     } else {
-      if (len > this.alloc) {
-        this.alloc = ALLOC_BYTES * (len >>> 10 | 2);
-        this.buffer = alloc(this.alloc);
+      if (len > this.bufferAlloc) {
+        this.bufferAlloc = this.bufferMinAlloc * (len >>> 10 | 2);
+        this.buffer = alloc(this.bufferAlloc);
       }
-      len = this.buffer.latin1Write(str, 0);
+      len = this.buffer.utf8Write(str, 0);
       bin = this.buffer.latin1Slice(0, len);
     }
 
