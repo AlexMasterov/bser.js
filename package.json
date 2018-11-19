@@ -9,14 +9,16 @@
   ],
   "license": "MIT",
   "author": "Alex Masterov <alex.masterow@gmail.com>",
-  "repository": "AlexMasterov/fast-bser",
+  "repository": "AlexMasterov/fast-bser.js",
   "homepage": "https://github.com/AlexMasterov/fast-bser.js#readme",
   "bugs": {
     "url": "https://github.com/AlexMasterov/fast-bser.js/issues"
   },
-  "main": "./src/index.js",
+  "main": "./index.js",
   "files": [
-    "src/"
+    "src/",
+    "dist/",
+    "./index.js"
   ],
   "engines": {
     "node": ">=8.3.0"
@@ -33,9 +35,11 @@
   },
   "devDependencies": {
     "coveralls": "3.0.2",
+    "fs-extra": "7.0.1",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
-    "rollup": "0.67.3"
+    "rollup": "0.67.3",
+    "rollup-plugin-delete": "0.1.2"
   },
   "nyc": {
     "all": false,
