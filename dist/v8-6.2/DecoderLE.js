@@ -5,7 +5,7 @@ const { f64 } = require('./binary');
 
 const u32f64 = new Uint32Array(f64.buffer);
 
-class DecoderBE {
+class DecoderLE {
   constructor({ bufferMinLen=15 } = {}) {
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
@@ -61,15 +61,15 @@ class DecoderBE {
   }
 
   decodeFloat64() {
-    u32f64[1] = this.buffer[this.offset] * 0x1000000
-      | this.buffer[this.offset + 1] << 16
-      | this.buffer[this.offset + 2] << 8
-      | this.buffer[this.offset + 3];
+    u32f64[0] = this.buffer[this.offset]
+        | this.buffer[this.offset + 1] << 8
+        | this.buffer[this.offset + 2] << 16
+        | this.buffer[this.offset + 3] * 0x1000000;
 
-    u32f64[0] = this.buffer[this.offset + 4] * 0x1000000
-      | this.buffer[this.offset + 5] << 16
-      | this.buffer[this.offset + 6] << 8
-      | this.buffer[this.offset + 7];
+    u32f64[1] = this.buffer[this.offset + 4]
+        | this.buffer[this.offset + 5] << 8
+        | this.buffer[this.offset + 6] << 16
+        | this.buffer[this.offset + 7] * 0x1000000;
 
     this.offset += 8;
 
@@ -84,8 +84,8 @@ class DecoderBE {
   }
 
   decodeInt16() {
-    const num = this.buffer[this.offset] << 8
-      | this.buffer[this.offset + 1];
+    const num = this.buffer[this.offset]
+      | this.buffer[this.offset + 1] << 8;
 
     this.offset += 2;
 
@@ -93,10 +93,10 @@ class DecoderBE {
   }
 
   decodeInt32() {
-    const num = this.buffer[this.offset] << 24
-      | this.buffer[this.offset + 1] << 16
-      | this.buffer[this.offset + 2] << 8
-      | this.buffer[this.offset + 3];
+    const num = this.buffer[this.offset]
+      | this.buffer[this.offset + 1] << 8
+      | this.buffer[this.offset + 2] << 16
+      | this.buffer[this.offset + 3] << 24;
 
     this.offset += 4;
 
@@ -104,16 +104,14 @@ class DecoderBE {
   }
 
   decodeInt64() {
-    
-      const num = (this.buffer[this.offset] << 24
-        | this.buffer[this.offset + 1] << 16
-        | this.buffer[this.offset + 2] << 8
-        | this.buffer[this.offset + 3]) * 0x100000000
-        + this.buffer[this.offset + 4] * 0x1000000
-        + (this.buffer[this.offset + 5] << 16
-          | this.buffer[this.offset + 6] << 8
-          | this.buffer[this.offset + 7]);
-  
+    const num = (this.buffer[this.offset]
+      | this.buffer[this.offset + 1] << 8
+      | this.buffer[this.offset + 2] << 16)
+      + this.buffer[this.offset + 3] * 0x1000000
+      + (this.buffer[this.offset + 4]
+        | this.buffer[this.offset + 5] << 8
+        | this.buffer[this.offset + 6] << 16
+        | this.buffer[this.offset + 7] << 24) * 0x100000000;
     this.offset += 8;
 
     return num;
@@ -165,4 +163,4 @@ class DecoderBE {
   }
 }
 
-module.exports = DecoderBE;
+module.exports = DecoderLE;

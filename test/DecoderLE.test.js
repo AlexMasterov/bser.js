@@ -10,7 +10,7 @@ const assertFloatEqual = (actual, expected) =>
     ? ok(Number.isNaN(actual))
     : deepStrictEqual(actual, expected);
 
-const { DecoderLE } = require('../src');
+const { DecoderLE } = require('../');
 
 const test = (...stubs) => spec => stubs.forEach(name =>
   describe(name, () => stub[name].forEach(({ name, value, LE: bin }) =>

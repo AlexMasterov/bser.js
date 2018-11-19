@@ -3,7 +3,7 @@
 const { deepStrictEqual } = require('assert');
 const { toBuf, stub } = require('./stub');
 
-const { EncoderLE } = require('../src');
+const { EncoderLE } = require('../');
 
 const test = (...stubs) => spec => stubs.forEach(name =>
   describe(name, () => stub[name].forEach(({ name, value, LE: bin }) =>

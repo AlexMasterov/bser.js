@@ -1,10 +1,11 @@
 'use strict';
 
 const { utf8toBin } = require('utf8-bin');
+const { encodeAsciiBE, encodeInt64BE } = require('./encoders');
 const { CHR, f64, u64, i64 } = require('./binary');
 
 const isArray = Array.isArray;
-const ObjectKeys = Object.keys;
+const objectKeys = Object.keys;
 const alloc = Buffer.allocUnsafe;
 const u8f64 = new Uint8Array(f64.buffer);
 const u8u64 = new Uint8Array(u64.buffer);
@@ -19,7 +20,11 @@ const Obj = 'object';
 const ALLOC_BYTES = 2048;
 
 class EncoderBE {
-  constructor({ bufferMinLen=15 } = {}) {
+  constructor({
+    objectKeys='ascii',
+    bufferMinLen=15,
+  } = {}) {
+    this.encodeObjectKeys = (objectKeys === 'ascii') ? encodeAsciiBE : this.encodeStr;
     this.alloc = 0;
     this.buffer = null;
     this.bufferMinLen = bufferMinLen >>> 0;
@@ -96,7 +101,7 @@ class EncoderBE {
       // int_t 64 safe
       if (num > -0x20000000000000) {
         return '\x06'
-          + encodeInt64(
+          + encodeInt64BE(
             (num / 0x100000000 >> 0) - 1,
             num >>> 0
           );
@@ -126,7 +131,7 @@ class EncoderBE {
     // (u)int_t 64 safe
     if (num < 0x20000000000000) {
       return '\x06'
-        + encodeInt64(
+        + encodeInt64BE(
           num >>> 11 | 1,
           num
         );
@@ -236,7 +241,7 @@ class EncoderBE {
   }
 
   encodeObject(obj) {
-    const keys = ObjectKeys(obj);
+    const keys = objectKeys(obj);
     const len = keys.length;
     if (len === 0) return '\x01\x03\x00';
 
@@ -258,23 +263,12 @@ class EncoderBE {
 
     for (let key, i = 0; i < len; i++) {
       key = keys[i];
-      bin += this.encodeStr(key);
+      bin += this.encodeObjectKeys(key);
       bin += this.handle(obj[key]);
     }
 
     return bin;
   }
-}
-
-function encodeInt64(hi, lo) {
-  return CHR(hi >> 24 & 0xff)
-    + CHR(hi >> 16 & 0xff)
-    + CHR(hi >> 8 & 0xff)
-    + CHR(hi & 0xff)
-    + CHR(lo >> 24 & 0xff)
-    + CHR(lo >> 16 & 0xff)
-    + CHR(lo >> 8 & 0xff)
-    + CHR(lo & 0xff);
 }
 
 module.exports = EncoderBE;
