@@ -5,7 +5,6 @@ const { encodeAsciiLE, encodeInt64LE } = require('./encoders');
 const { CHR, f64, u64, i64 } = require('./binary');
 
 const isArray = Array.isArray;
-const objectKeys = Object.keys;
 const alloc = Buffer.allocUnsafe;
 const u8f64 = new Uint8Array(f64.buffer);
 const u8u64 = new Uint8Array(u64.buffer);
@@ -19,11 +18,13 @@ const Obj = 'object';
 
 class EncoderLE {
   constructor({
-    objectKeys='ascii',
+    objectKey='ascii',
+    objectKeys=Object.keys,
     bufferMinLen=15,
     bufferMinAlloc=2048,
   } = {}) {
-    this.encodeObjectKeys = (objectKeys === 'ascii') ? encodeAsciiLE : this.encodeStr;
+    this.encodeObjectKey = (objectKey === 'ascii') ? encodeAsciiBE : this.encodeStr;
+    this.objectKeys = objectKeys;
     this.buffer = null;
     this.bufferAlloc = 0;
     this.bufferMinLen = bufferMinLen >>> 0;
@@ -241,7 +242,7 @@ class EncoderLE {
   }
 
   encodeObject(obj) {
-    const keys = objectKeys(obj);
+    const keys = this.objectKeys(obj);
     const len = keys.length;
     if (len === 0) return '\x01\x03\x00';
 
@@ -263,7 +264,7 @@ class EncoderLE {
 
     for (let key, i = 0; i < len; i++) {
       key = keys[i];
-      bin += this.encodeStr(key);
+      bin += this.encodeObjectKey(key);
       bin += this.handle(obj[key]);
     }
 
