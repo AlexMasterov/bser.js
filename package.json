@@ -29,9 +29,9 @@
     "test-report": "nyc --reporter=html --reporter=text mocha test/*.test.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
-  "dependencies": {
-    "ascii-chr": "0.3.0",
-    "utf8-bin": "0.3.1"
+  "peerDependencies": {
+    "ascii-chr": "0.3.x",
+    "utf8-bin": "0.3.x"
   },
   "devDependencies": {
     "coveralls": "3.0.2",
